@@ -1,23 +1,66 @@
 document.addEventListener("DOMContentLoaded", () => {
-  let acceptButton = document.getElementById("cookieAccept");
-  let declineButton = document.getElementById("cookieDecline");
-  let banner = document.getElementById("banner");
+  const STORAGE_KEY = "cookie-consenter-consent";
+  const CONSENT_VERSION = 1;
 
-  if (localStorage.getItem("permission") == "accepted") {
+  const acceptButton = document.getElementById("cookie-consenter-accept");
+  const declineButton = document.getElementById("cookie-consenter-decline");
+  const banner = document.getElementById("cookie-consenter-banner");
+
+  const hideBanner = () => {
     banner.style.display = "none";
+  };
+
+  if (!acceptButton || !declineButton || !banner) {
+    return;
   }
 
-  if (localStorage.getItem("permission") == "declined") {
-    banner.style.display = "none";
+  const getConsent = () => {
+    try {
+      const storedConsent = localStorage.getItem(STORAGE_KEY);
+
+      if (!storedConsent) {
+        return null;
+      }
+
+      const consent = JSON.parse(storedConsent);
+      const validStatuses = ["accepted", "declined"];
+
+      if (
+        consent.version !== CONSENT_VERSION ||
+        !validStatuses.includes(consent.status)
+      ) {
+        return null;
+      }
+
+      return consent;
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const saveConsent = (status) => {
+    const consent = {
+      version: CONSENT_VERSION,
+      status,
+      updatedAt: new Date().toISOString(),
+    };
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(consent));
+    } catch (error) {}
+  };
+
+  if (getConsent()) {
+    hideBanner();
   }
 
   acceptButton.addEventListener("click", () => {
-    banner.style.display = "none";
-    localStorage.setItem("permission", "accepted");
+    saveConsent("accepted");
+    hideBanner();
   });
 
   declineButton.addEventListener("click", () => {
-    banner.style.display = "none";
-    localStorage.setItem("permission", "declined");
+    saveConsent("declined");
+    hideBanner();
   });
 });
