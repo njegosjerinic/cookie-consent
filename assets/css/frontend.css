@@ -1,3 +1,9 @@
+#cookie-consenter-banner[hidden],
+#cookie-consenter-settings[hidden],
+#cookie-consenter-close[hidden] {
+  display: none !important;
+}
+
 #cookie-consenter-banner {
   position: fixed;
   left: 24px;
@@ -47,6 +53,27 @@
 }
 
 #cookie-consenter-banner button:focus-visible {
+  outline: 3px solid #111827;
+  outline-offset: 3px;
+}
+
+#cookie-consenter-settings {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1f2937;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#cookie-consenter-settings:focus-visible {
   outline: 3px solid #111827;
   outline-offset: 3px;
 }

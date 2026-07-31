@@ -27,12 +27,23 @@ final class Banner
             COOKIE_CONSENTER_VERSION
         );
 
+        $settings = Settings::get();
+
         wp_enqueue_script(
             'frontend-cookie-consent-script',
             COOKIE_CONSENTER_URL . 'assets/js/frontend.js',
             [],
             COOKIE_CONSENTER_VERSION,
-            true
+            true,
+        );
+
+        wp_localize_script(
+            'frontend-cookie-consent-script',
+            'CookieConsenterConfig',
+            [
+                'policyVersion' => (string) $settings['policy_version'],
+                'consentDurationDays' => (int) $settings['consent_duration_days'],
+            ],
         );
     }
 
@@ -42,7 +53,7 @@ final class Banner
 
         ?>
 
-        <div id="cookie-consenter-banner" role="region" aria-live="polite" aria-label="<?php
+        <div id="cookie-consenter-banner" role="region" aria-live="polite" hidden aria-label="<?php
         esc_attr_e(
             'Cookie consent',
             'cookie-consenter'
@@ -60,7 +71,17 @@ final class Banner
             <button type="button" id="cookie-consenter-decline">
                 <?php echo esc_html($content['decline_text'] ?? 'Decline'); ?>
             </button>
+
+            <button type="button" id="cookie-consenter-close"
+                aria-label="<?php esc_attr_e('Close cookie settings', 'cookie-consenter'); ?>" hidden>
+                <span aria-hidden="true">&times;</span>
+            </button>
         </div>
+
+        <button type="button" id="cookie-consenter-settings" aria-controls="cookie-consenter-banner" aria-expanded="false"
+            hidden>
+            <?php esc_html_e('Cookie settings', 'cookie-consenter'); ?>
+        </button>
 
         <?php
 

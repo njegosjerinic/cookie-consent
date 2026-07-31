@@ -18,7 +18,9 @@ final class Settings
                 'cookie-consenter'
             ),
             'accept_text' => __('Accept', 'cookie-consenter'),
-            'decline_text' => __('Decline', 'cookie-consenter')
+            'decline_text' => __('Decline', 'cookie-consenter'),
+            'policy_version' => '1',
+            'consent_duration_days' => 180
         ];
     }
 
@@ -68,6 +70,18 @@ final class Settings
             'banner_text' => sanitize_text_field($input['banner_text'] ?? $defaults['banner_text']),
             'accept_text' => sanitize_text_field($input['accept_text'] ?? $defaults['accept_text']),
             'decline_text' => sanitize_text_field($input['decline_text'] ?? $defaults['decline_text']),
+            'policy_version' => sanitize_text_field(
+                $input['policy_version'] ?? $defaults['policy_version']
+            ),
+            'consent_duration_days' => min(
+                3650,
+                max(
+                    1,
+                    absint(
+                        $input['consent_duration_days'] ?? $defaults['consent_duration_days']
+                    )
+                )
+            )
         ];
     }
 

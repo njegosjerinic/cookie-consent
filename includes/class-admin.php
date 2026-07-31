@@ -70,6 +70,42 @@ final class Admin
                         name="<?php echo esc_attr(Settings::OPTION_NAME) ?>[decline_text]"
                         value="<?php echo esc_attr($settings['decline_text'] ?? '') ?>">
                 </p>
+
+                <p>
+                    <label for="cookie-consenter-policy-version">
+                        <?php esc_html_e('Policy version', 'cookie-consenter'); ?>
+                    </label>
+
+                    <input type="text" id="cookie-consenter-policy-version"
+                        name="<?php echo esc_attr(Settings::OPTION_NAME); ?>[policy_version]"
+                        value="<?php echo esc_attr($settings['policy_version'] ?? '1'); ?>">
+
+                    <span class="description">
+                        <?php esc_html_e(
+                            'Change this value to ask visitors for consent again.',
+                            'cookie-consenter'
+                        ); ?>
+                    </span>
+                </p>
+
+                <p>
+                    <label for="cookie-consenter-consent-duration">
+                        <?php esc_html_e('Consent duration in days', 'cookie-consenter'); ?>
+                    </label>
+
+                    <input type="number" id="cookie-consenter-consent-duration"
+                        name="<?php echo esc_attr(Settings::OPTION_NAME); ?>[consent_duration_days]" value="<?php echo esc_attr(
+                               (string) ($settings['consent_duration_days'] ?? 180)
+                           ); ?>" min="1" max="3650" step="1">
+
+                    <span class="description">
+                        <?php esc_html_e(
+                            'How long a saved consent decision remains valid.',
+                            'cookie-consenter'
+                        ); ?>
+                    </span>
+                </p>
+
                 <?php submit_button(__('Save settings', 'cookie-consenter')); ?>
 
             </form>
