@@ -72,14 +72,78 @@ final class Banner
                 <?php echo esc_html($content['decline_text'] ?? 'Decline'); ?>
             </button>
 
+            <button type="button" id="cookie-consenter-manage" aria-controls="cookie-consenter-preferences"
+                aria-expanded="false">
+                <?php esc_html_e('Manage preferences', 'cookie-consenter'); ?>
+            </button>
+
+            <div id="cookie-consenter-preferences" hidden>
+                <fieldset>
+                    <legend>
+                        <?php esc_html_e('Cookie preferences', 'cookie-consenter'); ?>
+                    </legend>
+
+                    <label for="cookie-consenter-category-necessary">
+                        <input type="checkbox" id="cookie-consenter-category-necessary" checked disabled>
+                        <?php esc_html_e('Necessary', 'cookie-consenter'); ?>
+                    </label>
+
+                    <p>
+                        <?php esc_html_e(
+                            'Required for the website to function and cannot be disabled.',
+                            'cookie-consenter'
+                        ); ?>
+                    </p>
+
+                    <label for="cookie-consenter-category-preferences">
+                        <input type="checkbox" id="cookie-consenter-category-preferences">
+                        <?php esc_html_e('Preferences', 'cookie-consenter'); ?>
+                    </label>
+
+                    <p>
+                        <?php esc_html_e(
+                            'Remembers choices that improve your experience.',
+                            'cookie-consenter'
+                        ); ?>
+                    </p>
+
+                    <label for="cookie-consenter-category-analytics">
+                        <input type="checkbox" id="cookie-consenter-category-analytics">
+                        <?php esc_html_e('Analytics', 'cookie-consenter'); ?>
+                    </label>
+
+                    <p>
+                        <?php esc_html_e(
+                            'Helps us understand how visitors use the website.',
+                            'cookie-consenter'
+                        ); ?>
+                    </p>
+
+                    <label for="cookie-consenter-category-marketing">
+                        <input type="checkbox" id="cookie-consenter-category-marketing">
+                        <?php esc_html_e('Marketing', 'cookie-consenter'); ?>
+                    </label>
+
+                    <p>
+                        <?php esc_html_e(
+                            'Allows advertising and marketing-related services.',
+                            'cookie-consenter'
+                        ); ?>
+                    </p>
+                </fieldset>
+
+                <button type="button" id="cookie-consenter-save-preferences">
+                    <?php esc_html_e('Save preferences', 'cookie-consenter'); ?>
+                </button>
+            </div>
+
             <button type="button" id="cookie-consenter-close"
                 aria-label="<?php esc_attr_e('Close cookie settings', 'cookie-consenter'); ?>" hidden>
                 <span aria-hidden="true">&times;</span>
             </button>
         </div>
 
-        <button type="button" id="cookie-consenter-settings" aria-controls="cookie-consenter-banner" aria-expanded="false"
-            hidden>
+        <button type="button" id="cookie-consenter-settings" aria-controls="cookie-consenter-banner" aria-expanded="false">
             <?php esc_html_e('Cookie settings', 'cookie-consenter'); ?>
         </button>
 

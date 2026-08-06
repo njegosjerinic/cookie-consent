@@ -10,6 +10,7 @@ final class Settings
     public const OPTION_NAME = 'cookie_consenter_settings';
     public const SETTINGS_GROUP = 'cookie_consenter_settings_group';
 
+    // Ova funkcija vraca defaultne vrijednosti polja 
     public static function defaults(): array
     {
         return [
@@ -24,6 +25,7 @@ final class Settings
         ];
     }
 
+    //Ova funkcija uzima rezultate iz polja i puni ih defaultima ako nemaju neka mjesta popunjena 
     public static function get(): array
     {
         $settings = get_option(self::OPTION_NAME, []);
@@ -35,6 +37,7 @@ final class Settings
         return wp_parse_args($settings, self::defaults());
     }
 
+    //Registrovanje hukova 
     public function __construct()
     {
         $this->register_hooks();
@@ -45,6 +48,7 @@ final class Settings
         add_action('admin_init', [$this, 'register_settings']);
     }
 
+    //Registrovanje podesavanja 
     public function register_settings(): void
     {
         register_setting(
@@ -58,6 +62,7 @@ final class Settings
         );
     }
 
+    //Ciscenje podesavanja 
     public function sanitize_settings(mixed $input): array
     {
         $defaults = self::defaults();
