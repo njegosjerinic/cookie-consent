@@ -63,20 +63,20 @@ final class Banner
             <p>
                 <?php echo esc_html($content['banner_text'] ?? ''); ?>
             </p>
+            <div class="buttons">
+                <button type="button" id="cookie-consenter-accept">
+                    <?php echo esc_html($content['accept_text'] ?? 'Accept'); ?>
+                </button>
 
-            <button type="button" id="cookie-consenter-accept">
-                <?php echo esc_html($content['accept_text'] ?? 'Accept'); ?>
-            </button>
+                <button type="button" id="cookie-consenter-decline">
+                    <?php echo esc_html($content['decline_text'] ?? 'Decline'); ?>
+                </button>
 
-            <button type="button" id="cookie-consenter-decline">
-                <?php echo esc_html($content['decline_text'] ?? 'Decline'); ?>
-            </button>
-
-            <button type="button" id="cookie-consenter-manage" aria-controls="cookie-consenter-preferences"
-                aria-expanded="false">
-                <?php esc_html_e('Manage preferences', 'cookie-consenter'); ?>
-            </button>
-
+                <button type="button" id="cookie-consenter-manage" aria-controls="cookie-consenter-preferences"
+                    aria-expanded="false">
+                    <?php esc_html_e('Manage preferences', 'cookie-consenter'); ?>
+                </button>
+            </div>
             <div id="cookie-consenter-preferences" hidden>
                 <fieldset>
                     <legend>

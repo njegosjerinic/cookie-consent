@@ -1,6 +1,7 @@
 #cookie-consenter-banner[hidden],
 #cookie-consenter-settings[hidden],
-#cookie-consenter-close[hidden] {
+#cookie-consenter-close[hidden],
+#cookie-consenter-preferences[hidden] {
   display: none !important;
 }
 
@@ -19,6 +20,7 @@
 
   padding: 24px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
@@ -57,6 +59,31 @@
   outline-offset: 3px;
 }
 
+#cookie-consenter-preferences {
+  width: min(360px, calc(100vw - 96px));
+}
+
+#cookie-consenter-preferences fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+}
+
+#cookie-consenter-preferences label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+#cookie-consenter-preferences p {
+  margin: 0 0 8px 24px;
+  font-size: 14px;
+}
+
 #cookie-consenter-settings {
   position: fixed;
   left: 24px;
@@ -76,6 +103,18 @@
 #cookie-consenter-settings:focus-visible {
   outline: 3px solid #111827;
   outline-offset: 3px;
+}
+
+#cookie-consenter-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.buttons {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
 }
 
 @media (max-width: 768px) {

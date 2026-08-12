@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     Number(config.consentDurationDays) || 180,
   );
   const OPTIONAL_CATEGORIES = ["preferences", "analytics", "marketing"];
+  const BLOCKED_SCRIPT_SELECTOR =
+    'script[type="text/plain"][data-cookie-consenter-script][data-cookie-consenter-category]';
 
   //Elementi DOM-a
   const acceptButton = document.getElementById("cookie-consenter-accept");
@@ -168,6 +170,154 @@ document.addEventListener("DOMContentLoaded", () => {
     return consent;
   };
 
+  const requiresReloadAfterWithdrawal = (previousConsent, nextConsent) => {
+    if (!previousConsent) {
+      return false;
+    }
+
+    return OPTIONAL_CATEGORIES.some((category) => {
+      return (
+        previousConsent.choices[category] === true &&
+        nextConsent.choices[category] === false
+      );
+    });
+  };
+
+  const copyConsent = (consent) => {
+    if (!consent) {
+      return null;
+    }
+
+    return {
+      ...consent,
+      choices: {
+        ...consent.choices,
+      },
+    };
+  };
+
+  const hasConsent = (category) => {
+    if (category === "necessary") {
+      return true;
+    }
+
+    if (!OPTIONAL_CATEGORIES.includes(category)) {
+      return false;
+    }
+
+    return currentConsent?.choices?.[category] === true;
+  };
+
+  const getBlockedScripts = () => {
+    return Array.from(document.querySelectorAll(BLOCKED_SCRIPT_SELECTOR));
+  };
+
+  const getScriptCategory = (script) => {
+    const category = script.dataset.cookieConsenterCategory;
+
+    if (!OPTIONAL_CATEGORIES.includes(category)) {
+      return null;
+    }
+
+    return category;
+  };
+
+  const activateScript = (placeholder) => {
+    const category = getScriptCategory(placeholder);
+
+    if (!category || !hasConsent(category)) {
+      return false;
+    }
+
+    const executableScript = document.createElement("script");
+    const originalType = placeholder.dataset.cookieConsenterType;
+
+    Array.from(placeholder.attributes).forEach((attribute) => {
+      if (
+        attribute.name === "type" ||
+        attribute.name === "data-src" ||
+        attribute.name.startsWith("data-cookie-consenter-")
+      ) {
+        return;
+      }
+
+      executableScript.setAttribute(attribute.name, attribute.value);
+    });
+
+    if (originalType) {
+      executableScript.type = originalType;
+    }
+
+    if (placeholder.dataset.src) {
+      executableScript.src = placeholder.dataset.src;
+
+      if (!executableScript.async && !executableScript.defer) {
+        executableScript.async = false;
+      }
+    } else {
+      executableScript.textContent = placeholder.textContent;
+    }
+
+    placeholder.dataset.cookieConsenterState = "activated";
+    placeholder.replaceWith(executableScript);
+
+    return true;
+  };
+
+  const synchronizeConsentScripts = () => {
+    getBlockedScripts().forEach((placeholder) => {
+      if (placeholder.dataset.cookieConsenterState === "activated") {
+        return;
+      }
+
+      activateScript(placeholder);
+    });
+  };
+
+  const exposeConsentApi = () => {
+    window.CookieConsenter = Object.freeze({
+      getConsent: () => copyConsent(currentConsent),
+
+      hasConsent: (category) => hasConsent(category),
+
+      openSettings: () => {
+        showBanner(true);
+      },
+
+      refresh: () => {
+        synchronizeConsentScripts();
+      },
+    });
+  };
+
+  const dispatchConsentEvent = (eventName, source) => {
+    document.dispatchEvent(
+      new CustomEvent(eventName, {
+        detail: {
+          consent: copyConsent(currentConsent),
+          source,
+        },
+      }),
+    );
+  };
+
+  const updateConsent = (choices, source) => {
+    const previousConsent = currentConsent;
+    const nextConsent = saveConsent(choices);
+
+    currentConsent = nextConsent;
+    dispatchConsentEvent("cookie-consenter:change", source);
+
+    if (requiresReloadAfterWithdrawal(previousConsent, nextConsent)) {
+      window.location.reload();
+    }
+  };
+
+  document.addEventListener(
+    "cookie-consenter:change",
+    synchronizeConsentScripts,
+  );
+
   banner.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !closeButton.hidden) {
       hideBanner();
@@ -185,21 +335,29 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   acceptButton.addEventListener("click", () => {
-    currentConsent = saveConsent({
-      preferences: true,
-      analytics: true,
-      marketing: true,
-    });
+    updateConsent(
+      {
+        preferences: true,
+        analytics: true,
+        marketing: true,
+      },
+      "accept-all",
+    );
+
     hideBanner();
     settingsButton.focus();
   });
 
   declineButton.addEventListener("click", () => {
-    currentConsent = saveConsent({
-      preferences: false,
-      analytics: false,
-      marketing: false,
-    });
+    updateConsent(
+      {
+        preferences: false,
+        analytics: false,
+        marketing: false,
+      },
+      "decline-all",
+    );
+
     hideBanner();
     settingsButton.focus();
   });
@@ -215,11 +373,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   savePreferencesButton.addEventListener("click", () => {
-    currentConsent = saveConsent({
-      preferences: preferencesInput.checked,
-      analytics: analyticsInput.checked,
-      marketing: marketingInput.checked,
-    });
+    updateConsent(
+      {
+        preferences: preferencesInput.checked,
+        analytics: analyticsInput.checked,
+        marketing: marketingInput.checked,
+      },
+      "save-preferences",
+    );
 
     hideBanner();
     settingsButton.focus();
@@ -235,7 +396,9 @@ document.addEventListener("DOMContentLoaded", () => {
     showBanner();
   }
 
-  document.addEventListener("cookie-consenter:change", (event) => {
-    console.log(event.detail.consent);
-  });
+  exposeConsentApi();
+
+  synchronizeConsentScripts();
+
+  dispatchConsentEvent("cookie-consenter:ready", "initialization");
 });
