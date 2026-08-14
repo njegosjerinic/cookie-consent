@@ -15,6 +15,7 @@ final class Consent
         'analytics' => [
             'google-analytics.com/analytics.js',
             'googletagmanager.com/gtag/js?id=g-',
+            'googletagmanager.com/gtag/js?id=gt-',
             'plausible.io/js/',
             'cdn.usefathom.com/script.js',
             'clarity.ms/tag/',
