@@ -1,0 +1,15 @@
+.cookie-consenter-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.cookie-consenter-field input,
+.cookie-consenter-field textarea {
+  width: min(700px, 100%);
+}
+
+.cookie-consenter-field textarea {
+  min-height: 120px;
+  resize: vertical;
+}

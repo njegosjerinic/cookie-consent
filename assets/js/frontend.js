@@ -85,6 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const setPreferenceVisibility = (isVisible) => {
     preferencesPanel.hidden = !isVisible;
+    manageButton.hidden = isVisible;
     manageButton.setAttribute("aria-expanded", isVisible ? "true" : "false");
 
     if (isVisible) {

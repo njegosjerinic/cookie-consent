@@ -11,16 +11,37 @@ final class Consent
 {
     private const CATEGORIES = ['preferences', 'analytics', 'marketing'];
 
+    private const AUTO_DETECT_PATTERNS = [
+        'analytics' => [
+            'google-analytics.com/analytics.js',
+            'googletagmanager.com/gtag/js?id=g-',
+            'plausible.io/js/',
+            'cdn.usefathom.com/script.js',
+            'clarity.ms/tag/',
+        ],
+        'marketing' => [
+            'googletagmanager.com/gtm.js',
+            'googletagmanager.com/gtag/js?id=aw-',
+            'connect.facebook.net/',
+            'static.hotjar.com/',
+            'analytics.tiktok.com/',
+            'snap.licdn.com/li.lms-analytics/',
+            's.pinimg.com/ct/core.js',
+            'js.hs-scripts.com/',
+        ],
+    ];
+
     public function __construct()
     {
         add_filter('script_loader_tag', [$this, 'filter_script_tag'], 10, 3);
     }
 
     /**
-     * Block a registered script when its handle has been assigned a category.
+     * Block a manually categorized or recognized tracking script.
      *
      * Developers assign handles with the cookie_consenter_script_categories
-     * filter. Unregistered handles pass through unchanged.
+     * filter. Known tracker URLs are categorized automatically. Manual handle
+     * assignments take precedence and unknown scripts pass through unchanged.
      */
     public function filter_script_tag(string $tag, string $handle, string $src): string
     {
@@ -30,11 +51,13 @@ final class Consent
 
         $scripts = apply_filters('cookie_consenter_script_categories', []);
 
-        if (!is_array($scripts) || !isset($scripts[$handle])) {
+        $category = is_array($scripts) && isset($scripts[$handle])
+            ? sanitize_key((string) $scripts[$handle])
+            : $this->detect_category($src);
+
+        if ($category === null) {
             return $tag;
         }
-
-        $category = sanitize_key((string) $scripts[$handle]);
 
         if (!in_array($category, self::CATEGORIES, true)) {
             $category = 'invalid';
@@ -83,5 +106,20 @@ final class Consent
         $blocked_tag = preg_replace('/<script\b/i', '<script' . $attributes, $blocked_tag, 1);
 
         return is_string($blocked_tag) ? $blocked_tag : $tag;
+    }
+
+    private function detect_category(string $src): ?string
+    {
+        $normalized_src = strtolower($src);
+
+        foreach (self::AUTO_DETECT_PATTERNS as $category => $patterns) {
+            foreach ($patterns as $pattern) {
+                if (str_contains($normalized_src, $pattern)) {
+                    return $category;
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -4,6 +4,17 @@ Cookie Consenter is a developer-focused WordPress consent manager. It stores a
 visitor's category choices in `localStorage`, exposes a small browser API, and
 keeps registered optional scripts inert until their category is allowed.
 
+## Automatic detection
+
+WordPress-enqueued scripts from common services are blocked automatically:
+
+- Analytics: Google Analytics, Plausible, Fathom, and Microsoft Clarity.
+- Marketing: Google Tag Manager and Ads, Meta Pixel, Hotjar, TikTok Pixel,
+  LinkedIn Insight, Pinterest Tag, and HubSpot.
+
+Unknown scripts continue loading normally to avoid breaking the website. A
+manual handle assignment, as described below, overrides automatic detection.
+
 ## Categories
 
 - `necessary` is always available and should be loaded normally.

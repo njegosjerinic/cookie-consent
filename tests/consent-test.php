@@ -50,8 +50,33 @@ $consent = new \CookieConsenter\Consent();
 $normal_tag = '<script src="https://example.com/app.js" id="app-js"></script>';
 
 if ($consent->filter_script_tag($normal_tag, 'app', 'https://example.com/app.js') !== $normal_tag) {
-    throw new RuntimeException('Unregistered scripts must pass through unchanged.');
+    throw new RuntimeException('Unknown scripts must pass through unchanged.');
 }
+
+$auto_analytics_tag = $consent->filter_script_tag(
+    '<script src="https://www.googletagmanager.com/gtag/js?id=G-123"></script>',
+    'google-analytics',
+    'https://www.googletagmanager.com/gtag/js?id=G-123'
+);
+
+assert_contains('type="text/plain"', $auto_analytics_tag, 'Known analytics scripts must be inert.');
+assert_contains(
+    'data-cookie-consenter-category="analytics"',
+    $auto_analytics_tag,
+    'Known analytics scripts must be categorized automatically.'
+);
+
+$auto_marketing_tag = $consent->filter_script_tag(
+    '<script src="https://connect.facebook.net/en_US/fbevents.js"></script>',
+    'facebook-pixel',
+    'https://connect.facebook.net/en_US/fbevents.js'
+);
+
+assert_contains(
+    'data-cookie-consenter-category="marketing"',
+    $auto_marketing_tag,
+    'Known marketing scripts must be categorized automatically.'
+);
 
 $test_categories = ['analytics' => 'analytics'];
 $blocked_tag = $consent->filter_script_tag(
@@ -65,6 +90,19 @@ assert_contains('data-src="https://example.com/analytics.js"', $blocked_tag, 'Th
 assert_contains('data-cookie-consenter-category="analytics"', $blocked_tag, 'The category must be present.');
 assert_contains('id="analytics-js"', $blocked_tag, 'Existing attributes must be preserved.');
 assert_contains(' defer', $blocked_tag, 'Loading strategy attributes must be preserved.');
+
+$test_categories = ['facebook-pixel' => 'analytics'];
+$overridden_tag = $consent->filter_script_tag(
+    '<script src="https://connect.facebook.net/en_US/fbevents.js"></script>',
+    'facebook-pixel',
+    'https://connect.facebook.net/en_US/fbevents.js'
+);
+
+assert_contains(
+    'data-cookie-consenter-category="analytics"',
+    $overridden_tag,
+    'Manual categories must override automatic detection.'
+);
 
 $test_categories = ['broken' => 'not-a-category'];
 $invalid_tag = $consent->filter_script_tag(

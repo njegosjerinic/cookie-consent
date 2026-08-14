@@ -14,12 +14,14 @@ final class Settings
     public static function defaults(): array
     {
         return [
+            'banner_title' => __('Vaša privatnost je važna', 'cookie-consenter'),
             'banner_text' => __(
-                'We use cookies to improve your experience',
+                'Koristimo kolačiće kako bismo poboljšali vaše iskustvo',
                 'cookie-consenter'
             ),
-            'accept_text' => __('Accept', 'cookie-consenter'),
-            'decline_text' => __('Decline', 'cookie-consenter'),
+            'accept_text' => __('Prihvati', 'cookie-consenter'),
+            'decline_text' => __('Odbij', 'cookie-consenter'),
+            'button_color' => '#2563eb',
             'policy_version' => '1',
             'consent_duration_days' => 180
         ];
@@ -34,7 +36,22 @@ final class Settings
             $settings = [];
         }
 
-        return wp_parse_args($settings, self::defaults());
+        $defaults = self::defaults();
+        $settings = wp_parse_args($settings, $defaults);
+
+        $legacy_defaults = [
+            'banner_text' => 'We use cookies to improve your experience',
+            'accept_text' => 'Accept',
+            'decline_text' => 'Decline',
+        ];
+
+        foreach ($legacy_defaults as $key => $legacy_value) {
+            if ($settings[$key] === $legacy_value) {
+                $settings[$key] = $defaults[$key];
+            }
+        }
+
+        return $settings;
     }
 
     //Registrovanje hukova 
@@ -72,9 +89,14 @@ final class Settings
         }
 
         return [
-            'banner_text' => sanitize_text_field($input['banner_text'] ?? $defaults['banner_text']),
+            'banner_title' => sanitize_text_field(
+                $input['banner_title'] ?? $defaults['banner_title']
+            ),
+            'banner_text' => sanitize_textarea_field($input['banner_text'] ?? $defaults['banner_text']),
             'accept_text' => sanitize_text_field($input['accept_text'] ?? $defaults['accept_text']),
             'decline_text' => sanitize_text_field($input['decline_text'] ?? $defaults['decline_text']),
+            'button_color' => sanitize_hex_color($input['button_color'] ?? '')
+                ?: $defaults['button_color'],
             'policy_version' => sanitize_text_field(
                 $input['policy_version'] ?? $defaults['policy_version']
             ),
