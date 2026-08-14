@@ -22,6 +22,7 @@ define('COOKIE_CONSENTER_URL', plugin_dir_url(__FILE__));
 require_once COOKIE_CONSENTER_PATH . 'includes/class-admin.php';
 require_once COOKIE_CONSENTER_PATH . 'includes/class-settings.php';
 require_once COOKIE_CONSENTER_PATH . 'includes/class-banner.php';
+require_once COOKIE_CONSENTER_PATH . 'includes/class-consent.php';
 require_once COOKIE_CONSENTER_PATH . 'includes/class-plugin.php';
 
 add_action(

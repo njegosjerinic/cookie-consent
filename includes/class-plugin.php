@@ -16,6 +16,7 @@ final class Plugin
     {
         new Settings();
         new Admin();
+        new Consent();
         new Banner();
     }
 }
