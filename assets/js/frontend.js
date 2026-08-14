@@ -10,6 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
     Number(config.consentDurationDays) || 180,
   );
   const OPTIONAL_CATEGORIES = ["preferences", "analytics", "marketing"];
+  const COOKIE_PREFIXES = {
+    analytics: ["_ga", "_gid", "_gat"],
+    marketing: ["_gcl_"],
+  };
   const BLOCKED_SCRIPT_SELECTOR =
     'script[type="text/plain"][data-cookie-consenter-script][data-cookie-consenter-category]';
 
@@ -184,6 +188,41 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
+  const deleteCookie = (name) => {
+    const hostname = window.location.hostname || "";
+    const domainParts = hostname.split(".").filter(Boolean);
+    const domains = [""];
+
+    for (let index = 0; index < domainParts.length - 1; index += 1) {
+      domains.push(domainParts.slice(index).join("."));
+    }
+
+    domains.forEach((domain) => {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domain ? `; domain=${domain}` : ""}; SameSite=Lax`;
+    });
+  };
+
+  const removeDeniedCookies = (consent) => {
+    if (!consent?.choices || typeof document.cookie !== "string") {
+      return;
+    }
+
+    const cookieNames = document.cookie
+      .split(";")
+      .map((cookie) => cookie.trim().split("=")[0])
+      .filter(Boolean);
+
+    Object.entries(COOKIE_PREFIXES).forEach(([category, prefixes]) => {
+      if (consent.choices[category] === true) {
+        return;
+      }
+
+      cookieNames
+        .filter((name) => prefixes.some((prefix) => name.startsWith(prefix)))
+        .forEach(deleteCookie);
+    });
+  };
+
   const copyConsent = (consent) => {
     if (!consent) {
       return null;
@@ -307,6 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextConsent = saveConsent(choices);
 
     currentConsent = nextConsent;
+    removeDeniedCookies(currentConsent);
     dispatchConsentEvent("cookie-consenter:change", source);
 
     if (requiresReloadAfterWithdrawal(previousConsent, nextConsent)) {
@@ -388,6 +428,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   currentConsent = getConsent();
+
+  if (currentConsent) {
+    removeDeniedCookies(currentConsent);
+  }
 
   if (currentConsent) {
     populatePreferences(currentConsent);

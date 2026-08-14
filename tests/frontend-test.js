@@ -94,6 +94,7 @@ const invalidPlaceholder = new FakeElement("script", {
 const placeholders = [placeholder, inlinePlaceholder, invalidPlaceholder];
 const documentListeners = {};
 
+const expiredCookies = [];
 global.document = {
   getElementById: (id) => elements[id] ?? null,
   querySelectorAll: () => placeholders.filter((item) => !item.replacement),
@@ -106,6 +107,10 @@ global.document = {
     (documentListeners[event.type] ?? []).forEach((callback) => callback(event));
   },
 };
+Object.defineProperty(global.document, "cookie", {
+  get: () => "_ga=GA1.1.123; _ga_TEST=GS1.1.456; unrelated=keep",
+  set: (value) => expiredCookies.push(value),
+});
 
 const storage = new Map();
 global.localStorage = {
@@ -126,6 +131,7 @@ global.window = {
     consentDurationDays: 180,
   },
   location: {
+    hostname: "www.example.com",
     reload() {
       reloadCount += 1;
     },
@@ -160,5 +166,18 @@ assert.equal(window.CookieConsenter.hasConsent("analytics"), true);
 
 elements["cookie-consenter-decline"].listeners.click();
 assert.equal(reloadCount, 1, "Withdrawing active consent should reload once.");
+assert.ok(
+  expiredCookies.some((cookie) => cookie.startsWith("_ga=")),
+  "Declining analytics must expire the Google Analytics cookie.",
+);
+assert.ok(
+  expiredCookies.some((cookie) => cookie.startsWith("_ga_TEST=")),
+  "Declining analytics must expire Google Analytics property cookies.",
+);
+assert.equal(
+  expiredCookies.some((cookie) => cookie.startsWith("unrelated=")),
+  false,
+  "Unrelated cookies must not be removed.",
+);
 
 console.log("Consent frontend tests passed.");
