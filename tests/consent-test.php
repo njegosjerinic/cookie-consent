@@ -66,6 +66,19 @@ assert_contains(
     'Known analytics scripts must be categorized automatically.'
 );
 
+$site_kit_tag = $consent->filter_script_tag(
+    '<script src="https://www.googletagmanager.com/gtag/js?id=GT-TX9CWGML"></script>',
+    'google_gtagjs',
+    'https://www.googletagmanager.com/gtag/js?id=GT-TX9CWGML'
+);
+
+assert_contains('type="text/plain"', $site_kit_tag, 'Google Site Kit scripts must be inert.');
+assert_contains(
+    'data-cookie-consenter-category="analytics"',
+    $site_kit_tag,
+    'Google Site Kit scripts must be categorized as analytics.'
+);
+
 $auto_marketing_tag = $consent->filter_script_tag(
     '<script src="https://connect.facebook.net/en_US/fbevents.js"></script>',
     'facebook-pixel',
