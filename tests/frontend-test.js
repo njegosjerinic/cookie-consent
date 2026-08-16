@@ -108,7 +108,8 @@ global.document = {
   },
 };
 Object.defineProperty(global.document, "cookie", {
-  get: () => "_ga=GA1.1.123; _ga_TEST=GS1.1.456; unrelated=keep",
+  get: () =>
+    "_ga=GA1.1.123; _ga_TEST=GS1.1.456; _fbp=fb.1.123.456; _fbc=fb.1.123.click; unrelated=keep",
   set: (value) => expiredCookies.push(value),
 });
 
@@ -174,10 +175,25 @@ assert.ok(
   expiredCookies.some((cookie) => cookie.startsWith("_ga_TEST=")),
   "Declining analytics must expire Google Analytics property cookies.",
 );
+assert.ok(
+  expiredCookies.some((cookie) => cookie.startsWith("_fbp=")),
+  "Declining marketing must expire the Meta browser identifier cookie.",
+);
+assert.ok(
+  expiredCookies.some((cookie) => cookie.startsWith("_fbc=")),
+  "Declining marketing must expire the Meta click identifier cookie.",
+);
 assert.equal(
   expiredCookies.some((cookie) => cookie.startsWith("unrelated=")),
   false,
   "Unrelated cookies must not be removed.",
+);
+
+elements["cookie-consenter-accept"].listeners.click();
+assert.equal(
+  reloadCount,
+  2,
+  "Granting previously denied consent should reload the page.",
 );
 
 console.log("Consent frontend tests passed.");

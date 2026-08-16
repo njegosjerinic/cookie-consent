@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const OPTIONAL_CATEGORIES = ["preferences", "analytics", "marketing"];
   const COOKIE_PREFIXES = {
     analytics: ["_ga", "_gid", "_gat"],
-    marketing: ["_gcl_"],
+    marketing: ["_gcl_", "_fbp", "_fbc"],
   };
   const BLOCKED_SCRIPT_SELECTOR =
     'script[type="text/plain"][data-cookie-consenter-script][data-cookie-consenter-category]';
@@ -175,16 +175,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return consent;
   };
 
-  const requiresReloadAfterWithdrawal = (previousConsent, nextConsent) => {
+  const requiresReloadAfterConsentChange = (previousConsent, nextConsent) => {
     if (!previousConsent) {
       return false;
     }
 
     return OPTIONAL_CATEGORIES.some((category) => {
-      return (
-        previousConsent.choices[category] === true &&
-        nextConsent.choices[category] === false
-      );
+      return previousConsent.choices[category] !== nextConsent.choices[category];
     });
   };
 
@@ -344,14 +341,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const updateConsent = (choices, source) => {
     const previousConsent = currentConsent;
     const nextConsent = saveConsent(choices);
+    const shouldReload = requiresReloadAfterConsentChange(
+      previousConsent,
+      nextConsent,
+    );
 
     currentConsent = nextConsent;
     removeDeniedCookies(currentConsent);
-    dispatchConsentEvent("cookie-consenter:change", source);
 
-    if (requiresReloadAfterWithdrawal(previousConsent, nextConsent)) {
+    if (shouldReload) {
       window.location.reload();
+      return;
     }
+
+    dispatchConsentEvent("cookie-consenter:change", source);
   };
 
   document.addEventListener(
